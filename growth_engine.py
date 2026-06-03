@@ -144,3 +144,56 @@ class GrowthEngine:
             f"Our communities would likely overlap well!\n\n"
             f"Would you be open to a quick chat? 🙏"
         )
+
+
+# ── Trilingual polls ──────────────────────────────────────────────────────
+
+POLLS_AM = [
+    {
+        "question": "በ2025 በጣም የሚያስደስትህ የቴክ ዘርፍ የቱ ነው?",
+        "options": ["🤖 AI", "⚛️ ኳንተም ኮምፒዩቲንግ", "🔐 ሳይበር ደህንነት", "₿ ክሪፕቶ/Web3"]
+    },
+    {
+        "question": "ቴክኖሎጂ ኢትዮጵያን ሊቀይር ይችላል ብለህ ታምናለህ?",
+        "options": ["✅ አዎ፣ ሙሉ በሙሉ", "🤔 ከፊሉ", "⏳ ጊዜ ይፈጃል", "❌ አይቀይርም"]
+    },
+    {
+        "question": "AI የሰዎችን ሥራ ይወስዳል?",
+        "options": ["✅ አዎ፣ ብዙ ሥራ", "🔄 አዲስ ሥራ ይፈጥራል", "😐 ምናልባት", "❌ አይወስድም"]
+    },
+]
+
+POLLS_ORM = [
+    {
+        "question": "Damee teknooloojii kami bara 2025 si hawwata?",
+        "options": ["🤖 AI", "⚛️ Kwantamii", "🔐 Nageenyaa Saayibarii", "₿ Crypto/Web3"]
+    },
+    {
+        "question": "Teknooloojiin Oromiyaa ni jijjiiraa?",
+        "options": ["✅ Eeyyee, guutummaatti", "🤔 Gara tokkoon", "⏳ Yeroo fudhata", "❌ Hin jijjiiru"]
+    },
+]
+
+
+class GrowthEngineMultilingual(GrowthEngine):
+    """Extended growth engine with multilingual support."""
+
+    def create_poll(self, lang: str = None) -> dict:
+        import random as _random
+        if lang == "am":
+            return _random.choice(POLLS_AM)
+        elif lang == "orm":
+            return _random.choice(POLLS_ORM)
+        # Default: mix languages randomly
+        all_polls = POLLS + POLLS_AM + POLLS_ORM
+        return _random.choice(all_polls)
+
+    def create_trilingual_announcement(self) -> str:
+        return (
+            "📢 *ZemenByte Channel Announcement*\n\n"
+            "🇬🇧 *English:* Daily tech insights on AI, Crypto, Cybersecurity & more!\n\n"
+            "🇪🇹 *አማርኛ:* በቴክኖሎጂ፣ AI፣ ክሪፕቶ እና የሳይበር ደህንነት ላይ ዕለታዊ ዜናዎችን እናቀርባለን!\n\n"
+            "🟢 *Afaan Oromoo:* Oduu teknooloojii, AI, Crypto fi nageenyaa saayibarii guyyuu!\n\n"
+            "📡 Follow @ZemenByte | ZemenByte hordofaa | ZemenByte hordofaa\n\n"
+            "#ZemenByte #Ethiopia #Oromia #Technology"
+        )
