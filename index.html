@@ -342,7 +342,7 @@ function saveSetup() {
 // ══════════════════════════════════════════════════════════════════════════
 //  API
 // ══════════════════════════════════════════════════════════════════════════
-function getAPIBase()  { return localStorage.getItem('zb_api_url') || ''; }
+function getAPIBase()  { return localStorage.getItem('zb_api_url') || 'https://zemenbyte-bot-production.up.railway.app'; }
 function getSecret()   { return localStorage.getItem('zb_secret') || 'zemenbyte2025'; }
 
 async function api(path, method='GET', body=null) {
