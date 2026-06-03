@@ -80,6 +80,16 @@ def add_cors(response):
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return response
 
+@flask_app.route("/")
+def root():
+    return jsonify({
+        "service":  "ZemenByte Bot API",
+        "status":   "running ✅",
+        "channel":  f"@{cfg.CHANNEL_USERNAME}",
+        "users":    referral.total_users(),
+        "ts":       datetime.utcnow().isoformat()
+    })
+
 @flask_app.route("/api/health")
 def health():
     return jsonify({"status": "ok", "ts": datetime.utcnow().isoformat()})
@@ -817,11 +827,11 @@ def main():
     jq.run_daily(weekly_engagement_job,       time=dtime(10, 0),  days=(0,))
     jq.run_daily(weekly_referral_reminder,    time=dtime(18, 0),  days=(2,))
 
-    # Capture event loop after bot starts
+    # Capture the running event loop AFTER polling starts
     async def post_init(app):
         global _tg_loop
-        _tg_loop = asyncio.get_event_loop()
-        logger.info("✅ Event loop captured — API ready")
+        _tg_loop = asyncio.get_running_loop()
+        logger.info(f"✅ Event loop captured: {_tg_loop}")
 
     _tg_app.post_init = post_init
 
