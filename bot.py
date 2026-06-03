@@ -6,6 +6,7 @@ Trilingual + Referral System
 EN | አማርኛ | Afaan Oromoo
 """
 
+import asyncio
 import logging
 import os
 from datetime import datetime, time
@@ -576,9 +577,22 @@ def main():
     jq.run_daily(weekly_engagement_job,          time=time(10, 0), days=(0,))   # Monday
     jq.run_daily(weekly_referral_reminder_job,   time=time(18, 0), days=(2,))   # Wednesday
 
-    api_server.start(analytics, scheduler, engine, app, cfg)
-
     logger.info("🚀 ZemenByte bot started — Referral system active!")
+
+    async def post_init(application):
+        """Called after the event loop starts — safe to pass loop now."""
+        loop = asyncio.get_event_loop()
+        api_server.init(analytics, scheduler, engine, application, cfg, loop)
+        port   = int(os.getenv("PORT", "8080"))
+        from http.server import HTTPServer
+        from api_server import Handler
+        server = HTTPServer(("0.0.0.0", port), Handler)
+        import threading
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+        logger.info(f"✅ API server started on port {port}")
+
+    app.post_init = post_init
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
