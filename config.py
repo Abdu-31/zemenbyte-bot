@@ -61,3 +61,8 @@ class Config:
 
     # ── Dashboard secret ──────────────────────────────────────────────────
     DASHBOARD_SECRET: str = os.getenv("DASHBOARD_SECRET", "zemenbyte2025")
+
+    # ── Subscriber notifications ───────────────────────────────────────────
+    # Set True to auto-notify all registered users on every auto-post
+    # Recommended: False (use manual Notify All button instead)
+    AUTO_NOTIFY_SUBSCRIBERS: bool = os.getenv("AUTO_NOTIFY_SUBSCRIBERS","false").lower()=="true"
