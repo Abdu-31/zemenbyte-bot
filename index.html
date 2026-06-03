@@ -4,14 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZemenByte Dashboard</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#060a14;--panel:#0c1220;--border:#1a2540;--accent:#00e5ff;--accent2:#7c3aed;--accent3:#10b981;--warn:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--muted:#64748b}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:16px;
-    background-image:radial-gradient(ellipse at 20% 0%,rgba(124,58,237,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(0,229,255,.06) 0%,transparent 60%)}
+    background-image:radial-gradient(ellipse at 20% 0%,rgba(124,58,237,.08) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(0,229,255,.06) 0%,transparent 60%)}
 
-  /* Setup screen */
+  /* ── Access Denied ── */
+  .denied{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:90vh;text-align:center;padding:24px}
+  .denied-icon{font-size:64px;margin-bottom:20px}
+  .denied h2{font-size:20px;font-weight:800;margin-bottom:10px;color:var(--danger)}
+  .denied p{color:var(--muted);font-size:13px;line-height:1.7;max-width:280px}
+  .denied .channel-link{display:inline-block;margin-top:20px;background:rgba(0,229,255,.1);
+    border:1px solid var(--accent);color:var(--accent);padding:10px 24px;border-radius:10px;
+    font-weight:700;text-decoration:none;font-size:13px}
+
+  /* ── Loading ── */
+  .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:90vh;text-align:center;gap:16px}
+  .loading-screen p{color:var(--muted);font-family:'Space Mono',monospace;font-size:12px}
+  .big-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Setup screen ── */
   .setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;
     min-height:80vh;text-align:center;padding:20px}
   .setup-logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent2),var(--accent));
@@ -19,8 +39,7 @@
   .setup-screen h2{font-size:22px;font-weight:800;margin-bottom:8px}
   .setup-screen p{color:var(--muted);font-size:13px;margin-bottom:24px;line-height:1.6}
   .setup-input{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);
-    border-radius:10px;padding:14px;font-size:13px;font-family:'Space Mono',monospace;margin-bottom:8px;
-    outline:none}
+    border-radius:10px;padding:14px;font-size:13px;font-family:'Space Mono',monospace;margin-bottom:8px;outline:none}
   .setup-input:focus{border-color:var(--accent)}
   .setup-input::placeholder{color:var(--muted)}
   .setup-btn{width:100%;background:linear-gradient(135deg,var(--accent2),var(--accent));
@@ -28,7 +47,7 @@
     font-family:'Syne',sans-serif;cursor:pointer;margin-bottom:8px}
   .setup-note{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.6}
 
-  /* Header */
+  /* ── Header ── */
   .header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
   .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accent));
     display:flex;align-items:center;justify-content:center;font-size:20px}
@@ -39,10 +58,9 @@
     display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .settings-icon{background:transparent;border:none;color:var(--muted);font-size:18px;
-    cursor:pointer;padding:4px;margin-left:8px}
+  .settings-icon{background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;margin-left:6px}
 
-  /* Stats */
+  /* ── Stats ── */
   .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
   .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
   .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
@@ -50,30 +68,27 @@
   .stat-value{font-size:24px;font-weight:800;line-height:1}
   .stat-sub{font-size:10px;color:var(--accent3);margin-top:3px;font-family:'Space Mono',monospace}
 
-  /* Cards */
+  /* ── Cards ── */
   .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
   .card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
     margin-bottom:12px;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace}
   .card-title .accent{color:var(--accent)}
 
-  /* Buttons */
+  /* ── Buttons ── */
   .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;
     padding:12px 10px;cursor:pointer;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;
     display:flex;align-items:center;gap:6px;transition:all .2s;width:100%;justify-content:center}
   .btn:hover{border-color:var(--accent);background:rgba(0,229,255,.05)}
   .btn:active{transform:scale(.97)}
-  .btn-post-now{grid-column:1/-1;background:rgba(0,229,255,.08);border-color:var(--accent);
-    color:var(--accent);font-size:13px;padding:14px}
+  .btn-post-now{grid-column:1/-1;background:rgba(0,229,255,.08);border-color:var(--accent);color:var(--accent);font-size:13px;padding:14px}
   .btn-icon{font-size:15px}
-
-  /* Topic buttons */
   .topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
   .topic-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;
     padding:8px 4px;cursor:pointer;font-size:11px;font-weight:600;font-family:'Syne',sans-serif;transition:all .2s}
   .topic-btn:hover,.topic-btn.selected{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.06)}
 
-  /* Timeline */
+  /* ── Timeline ── */
   .timeline{display:flex;flex-direction:column;gap:6px}
   .tl-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--border)}
   .tl-item.active{border-color:var(--accent);background:rgba(0,229,255,.04)}
@@ -86,7 +101,7 @@
   .tl-label{font-size:12px;font-weight:600;flex:1}
   .tl-tag{font-size:10px;padding:2px 7px;border-radius:4px;font-family:'Space Mono',monospace}
 
-  /* Topic bars */
+  /* ── Topic bars ── */
   .topic-list{display:flex;flex-direction:column;gap:8px}
   .t-header{display:flex;justify-content:space-between;margin-bottom:3px}
   .t-name{font-size:12px;font-weight:600}
@@ -94,7 +109,7 @@
   .bar-track{height:4px;background:var(--border);border-radius:3px;overflow:hidden}
   .bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease}
 
-  /* Scheduler */
+  /* ── Scheduler ── */
   .sched-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .sched-status{font-size:12px;font-family:'Space Mono',monospace;flex:1}
   .toggle-btn{background:transparent;border:1px solid var(--border);color:var(--text);
@@ -102,12 +117,12 @@
   .toggle-btn.running{border-color:var(--accent3);color:var(--accent3)}
   .toggle-btn.paused{border-color:var(--warn);color:var(--warn)}
 
-  /* Preview */
+  /* ── Preview ── */
   .preview-box{background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-radius:8px;
     padding:12px;font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;
     max-height:160px;overflow-y:auto;white-space:pre-wrap;color:var(--text)}
 
-  /* Toast */
+  /* ── Toast ── */
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);
     background:#0c1220;border:1px solid var(--accent3);color:var(--accent3);padding:10px 20px;
     border-radius:10px;font-size:12px;font-family:'Space Mono',monospace;transition:transform .3s;
@@ -115,55 +130,54 @@
   .toast.show{transform:translateX(-50%) translateY(0)}
   .toast.error{border-color:var(--danger);color:var(--danger)}
 
-  /* Spinner */
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);
     border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
   .hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════
-     SETUP SCREEN (shown when no API URL is saved)
-══════════════════════════════════════════════════════════ -->
-<div id="setupScreen" class="setup-screen hidden">
-  <div class="setup-logo">⚡</div>
-  <h2>Connect to Your Bot</h2>
-  <p>Enter your Railway deployment URL to connect the dashboard to your live ZemenByte bot.</p>
-
-  <input id="apiUrlInput" class="setup-input" type="url"
-    placeholder="https://your-app.up.railway.app"
-    autocomplete="off" autocorrect="off" spellcheck="false">
-
-  <input id="secretInput" class="setup-input" type="text"
-    placeholder="Dashboard secret (default: zemenbyte2025)"
-    value="zemenbyte2025">
-
-  <button class="setup-btn" onclick="saveSetup()">✅ Connect Dashboard</button>
-
-  <div class="setup-note">
-    Find your URL in Railway → Project → Settings → Networking → Public Domain
-  </div>
+<!-- ① Loading -->
+<div id="screenLoading" class="loading-screen">
+  <div class="big-spinner"></div>
+  <p>Verifying identity...</p>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MAIN DASHBOARD
-══════════════════════════════════════════════════════════ -->
-<div id="mainDashboard" class="hidden">
+<!-- ② Access Denied -->
+<div id="screenDenied" class="denied hidden">
+  <div class="denied-icon">🔒</div>
+  <h2>Admin Only</h2>
+  <p>This dashboard is restricted to ZemenByte admins only.<br><br>
+     Follow the channel for daily tech insights on AI, Crypto, Cybersecurity & more.</p>
+  <a class="channel-link" href="https://t.me/ZemenByte" target="_blank">📡 Follow @ZemenByte</a>
+</div>
+
+<!-- ③ Setup (first time / change API URL) -->
+<div id="screenSetup" class="setup-screen hidden">
+  <div class="setup-logo">⚡</div>
+  <h2>Connect to Bot API</h2>
+  <p>Enter your Railway deployment URL to connect the dashboard to your live bot.</p>
+  <input id="apiUrlInput" class="setup-input" type="url"
+    placeholder="https://your-app.up.railway.app" autocomplete="off" spellcheck="false">
+  <input id="secretInput" class="setup-input" type="text"
+    placeholder="Secret (default: zemenbyte2025)" value="zemenbyte2025">
+  <button class="setup-btn" onclick="saveSetup()">✅ Connect Dashboard</button>
+  <div class="setup-note">Railway → Project → Settings → Networking → Public Domain</div>
+</div>
+
+<!-- ④ Main Dashboard -->
+<div id="screenDashboard" class="hidden">
 
   <div class="header">
     <div class="logo">⚡</div>
     <div class="header-text">
       <h1>ZemenByte</h1>
-      <p id="channelLabel">@ZemenByte • Telegram Channel</p>
+      <p id="channelLabel">@ZemenByte • Admin Dashboard</p>
     </div>
     <div class="live-badge"><div class="dot"></div>LIVE</div>
-    <button class="settings-icon" onclick="showSetup()" title="Settings">⚙️</button>
+    <button class="settings-icon" onclick="showScreen('screenSetup')" title="Settings">⚙️</button>
   </div>
 
-  <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Members</div>
@@ -187,7 +201,6 @@
     </div>
   </div>
 
-  <!-- Post Now -->
   <div class="card">
     <div class="card-title"><span class="accent">📝</span> Post to Channel</div>
     <div class="btn-grid">
@@ -198,7 +211,6 @@
     <div class="topic-grid" id="topicBtns"></div>
   </div>
 
-  <!-- Growth Tools -->
   <div class="card">
     <div class="card-title"><span class="accent">🌱</span> Growth Tools</div>
     <div class="btn-grid">
@@ -209,7 +221,6 @@
     </div>
   </div>
 
-  <!-- Scheduler -->
   <div class="card">
     <div class="card-title"><span class="accent">⏰</span> Schedule</div>
     <div class="sched-row">
@@ -219,7 +230,6 @@
     <div class="timeline" id="timeline"></div>
   </div>
 
-  <!-- Topic Distribution -->
   <div class="card">
     <div class="card-title"><span class="accent">📊</span> Topic Distribution</div>
     <div class="topic-list" id="topicDist">
@@ -227,7 +237,6 @@
     </div>
   </div>
 
-  <!-- Preview -->
   <div class="card">
     <div class="card-title">
       <span class="accent">👁</span> Next Post Preview
@@ -238,77 +247,107 @@
     <div class="preview-box" id="previewBox">Loading...</div>
   </div>
 
-</div><!-- end mainDashboard -->
+</div><!-- end dashboard -->
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Storage keys ──────────────────────────────────────────────────────────
-const KEY_URL    = 'zb_api_url';
-const KEY_SECRET = 'zb_secret';
+// ══════════════════════════════════════════════════════════════════════════
+//  AUTH — Telegram WebApp identity check
+// ══════════════════════════════════════════════════════════════════════════
 
-const topicColors = {
-  AI:'#00e5ff', Crypto:'#f59e0b', Cybersecurity:'#ef4444',
-  Quantum:'#7c3aed', Innovation:'#ec4899', Tech:'#10b981'
-};
-const topicNames = ['AI','Crypto','Cybersecurity','Quantum','Tech','Innovation'];
-const slotLabels = ['Morning Brief','Mid-Morning','Afternoon Drop','Deep Dive','Evening Update','Night Wrap'];
+const tg = window.Telegram?.WebApp;
 
-// ── Init ──────────────────────────────────────────────────────────────────
-function getAPIBase() { return localStorage.getItem(KEY_URL) || ''; }
-function getSecret()  { return localStorage.getItem(KEY_SECRET) || 'zemenbyte2025'; }
+// Your admin Telegram user IDs — add yours here
+// Get your ID by messaging @userinfobot on Telegram
+const ADMIN_IDS = [
+  7198677868  // ZemenByte Admin
+];
 
+function getTelegramUserId() {
+  try {
+    return tg?.initDataUnsafe?.user?.id || null;
+  } catch(e) { return null; }
+}
+
+function isAdmin(userId) {
+  // If ADMIN_IDS is empty, only allow access when opened directly in browser (dev mode)
+  if (ADMIN_IDS.length === 0) return true;
+  return ADMIN_IDS.includes(userId);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  SCREEN MANAGER
+// ══════════════════════════════════════════════════════════════════════════
+const SCREENS = ['screenLoading','screenDenied','screenSetup','screenDashboard'];
+
+function showScreen(id) {
+  SCREENS.forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  INIT FLOW
+// ══════════════════════════════════════════════════════════════════════════
 function init() {
-  const url = getAPIBase();
-  if (!url) {
-    showSetup();
-  } else {
-    showDashboard();
-  }
+  if (tg) tg.ready();
+
+  const userId = getTelegramUserId();
+
+  // Short delay for UX
+  setTimeout(() => {
+    // Check if opened from Telegram
+    if (tg && tg.initData) {
+      // Opened inside Telegram WebApp
+      if (!isAdmin(userId)) {
+        showScreen('screenDenied');
+        return;
+      }
+    }
+    // Admin confirmed (or dev mode) — check API URL
+    const apiUrl = localStorage.getItem('zb_api_url');
+    if (!apiUrl) {
+      showScreen('screenSetup');
+    } else {
+      showScreen('screenDashboard');
+      renderTopicBtns();
+      loadStats();
+      loadPreview();
+    }
+  }, 1200);
 }
 
-function showSetup() {
-  document.getElementById('setupScreen').classList.remove('hidden');
-  document.getElementById('mainDashboard').classList.add('hidden');
-  const saved = getAPIBase();
-  if (saved) document.getElementById('apiUrlInput').value = saved;
-}
-
-function showDashboard() {
-  document.getElementById('setupScreen').classList.add('hidden');
-  document.getElementById('mainDashboard').classList.remove('hidden');
-  renderTopicBtns();
-  loadStats();
-  loadPreview();
-}
-
+// ══════════════════════════════════════════════════════════════════════════
+//  SETUP
+// ══════════════════════════════════════════════════════════════════════════
 function saveSetup() {
-  const url = document.getElementById('apiUrlInput').value.trim().replace(/\/$/, '');
+  const url    = document.getElementById('apiUrlInput').value.trim().replace(/\/$/, '');
   const secret = document.getElementById('secretInput').value.trim();
   if (!url || !url.startsWith('http')) {
     toast('⚠️ Enter a valid URL starting with https://', true);
     return;
   }
-  localStorage.setItem(KEY_URL, url);
-  localStorage.setItem(KEY_SECRET, secret || 'zemenbyte2025');
+  localStorage.setItem('zb_api_url', url);
+  localStorage.setItem('zb_secret', secret || 'zemenbyte2025');
   toast('✅ Saved! Connecting...');
-  setTimeout(showDashboard, 800);
+  setTimeout(() => {
+    showScreen('screenDashboard');
+    renderTopicBtns();
+    loadStats();
+    loadPreview();
+  }, 800);
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────
-function toast(msg, isError=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.className = 'toast', 3500);
-}
+// ══════════════════════════════════════════════════════════════════════════
+//  API
+// ══════════════════════════════════════════════════════════════════════════
+function getAPIBase()  { return localStorage.getItem('zb_api_url') || ''; }
+function getSecret()   { return localStorage.getItem('zb_secret') || 'zemenbyte2025'; }
 
-// ── API ───────────────────────────────────────────────────────────────────
 async function api(path, method='GET', body=null) {
   const base = getAPIBase();
-  if (!base) { showSetup(); throw new Error('No API URL'); }
+  if (!base) { showScreen('screenSetup'); throw new Error('No API URL'); }
   const opts = {
     method,
     headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getSecret() }
@@ -319,62 +358,68 @@ async function api(path, method='GET', body=null) {
   return res.json();
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+//  DASHBOARD LOGIC
+// ══════════════════════════════════════════════════════════════════════════
+const topicColors = { AI:'#00e5ff',Crypto:'#f59e0b',Cybersecurity:'#ef4444',Quantum:'#7c3aed',Innovation:'#ec4899',Tech:'#10b981' };
+const topicNames  = ['AI','Crypto','Cybersecurity','Quantum','Tech','Innovation'];
+const slotLabels  = ['Morning Brief','Mid-Morning','Afternoon Drop','Deep Dive','Evening Update','Night Wrap'];
+
+function toast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 3500);
+}
+
 async function loadStats() {
   try {
     const d = await api('/api/stats');
-
-    document.getElementById('statMembers').textContent = Number(d.members).toLocaleString();
+    document.getElementById('statMembers').textContent  = Number(d.members).toLocaleString();
     document.getElementById('statMembersSub').textContent = 'live from Telegram';
-    document.getElementById('statPosts').textContent = d.posts_today;
+    document.getElementById('statPosts').textContent    = d.posts_today;
     document.getElementById('statPostsSub').textContent = `${d.remaining} remaining`;
-    document.getElementById('statTotal').textContent = d.total_posts;
-    document.getElementById('channelLabel').textContent = `@${d.channel} • Telegram Channel`;
-
+    document.getElementById('statTotal').textContent    = d.total_posts;
+    document.getElementById('channelLabel').textContent = `@${d.channel} • Admin Dashboard`;
     const running = d.scheduler_running;
-    document.getElementById('statSched').textContent = running ? '🟢 Running' : '🟡 Paused';
-    document.getElementById('statNext').textContent   = `next: ${d.next_post}`;
-
+    document.getElementById('statSched').textContent    = running ? '🟢 Running' : '🟡 Paused';
+    document.getElementById('statNext').textContent     = `next: ${d.next_post}`;
     const toggle = document.getElementById('schedToggle');
-    toggle.textContent  = running ? '⏸ Pause' : '▶️ Resume';
-    toggle.className    = 'toggle-btn ' + (running ? 'running' : 'paused');
-    document.getElementById('schedStatus').textContent =
-      `${d.posts_per_day} posts/day • Next: ${d.next_post}`;
-
+    toggle.textContent = running ? '⏸ Pause' : '▶️ Resume';
+    toggle.className   = 'toggle-btn ' + (running ? 'running' : 'paused');
+    document.getElementById('schedStatus').textContent  = `${d.posts_per_day} posts/day • Next: ${d.next_post}`;
     renderTopicDist(d.topics || []);
     renderTimeline(d.post_hours || [7,10,13,16,19,22]);
-
   } catch(e) {
-    toast('⚠️ Cannot reach API — tap ⚙️ to update URL', true);
+    toast('⚠️ API error — tap ⚙️ to check URL', true);
   }
 }
 
-// ── Timeline ──────────────────────────────────────────────────────────────
 function renderTimeline(hours) {
   const nowH = new Date().getUTCHours() + new Date().getUTCMinutes()/60;
-  document.getElementById('timeline').innerHTML = hours.map((h, i) => {
-    const status = h < nowH-0.1 ? 'done' : Math.abs(h - nowH) < 0.5 ? 'active' : 'pending';
+  document.getElementById('timeline').innerHTML = hours.map((h,i) => {
+    const status = h < nowH-0.1 ? 'done' : Math.abs(h-nowH)<0.5 ? 'active' : 'pending';
     const topic  = topicNames[i % topicNames.length];
     const color  = topicColors[topic] || '#fff';
     return `<div class="tl-item ${status}">
       <div class="tl-time">${String(h).padStart(2,'0')}:00</div>
       <div class="tl-dot"></div>
-      <div class="tl-label">${slotLabels[i] || 'Post'}</div>
+      <div class="tl-label">${slotLabels[i]||'Post'}</div>
       <div class="tl-tag" style="background:${color}20;color:${color};border:1px solid ${color}40">#${topic}</div>
     </div>`;
   }).join('');
 }
 
-// ── Topic dist ────────────────────────────────────────────────────────────
 function renderTopicDist(topics) {
   if (!topics.length) {
     document.getElementById('topicDist').innerHTML =
-      '<div style="color:var(--muted);font-size:12px;font-family:\'Space Mono\',monospace">No posts yet — start posting!</div>';
+      '<div style="color:var(--muted);font-size:12px;font-family:\'Space Mono\',monospace">No posts yet</div>';
     return;
   }
-  const max = topics[0][1] || 1;
-  document.getElementById('topicDist').innerHTML = topics.map(([t, c]) => {
-    const color = topicColors[t] || '#888';
+  const max = topics[0][1]||1;
+  document.getElementById('topicDist').innerHTML = topics.map(([t,c]) => {
+    const color = topicColors[t]||'#888';
     const pct   = Math.round((c/max)*100);
     return `<div>
       <div class="t-header"><div class="t-name">${t}</div><div class="t-count">${c} posts</div></div>
@@ -383,24 +428,20 @@ function renderTopicDist(topics) {
   }).join('');
 }
 
-// ── Topic buttons ─────────────────────────────────────────────────────────
 function renderTopicBtns() {
   document.getElementById('topicBtns').innerHTML =
-    topicNames.map(t =>
-      `<button class="topic-btn" onclick="postTopic('${t}')">#${t}</button>`
-    ).join('');
+    topicNames.map(t => `<button class="topic-btn" onclick="postTopic('${t}')">#${t}</button>`).join('');
 }
 
-// ── Post actions ──────────────────────────────────────────────────────────
 async function postAuto() {
   const btn = document.querySelector('.btn-post-now');
   const orig = btn.innerHTML;
   btn.innerHTML = '<div class="spinner"></div> Posting...';
   btn.style.pointerEvents = 'none';
   try {
-    const d = await api('/api/post', 'POST', {});
-    if (d.ok) { toast(`✅ Posted! Topic: #${d.topic}`); loadStats(); }
-    else toast('❌ ' + (d.error||'Post failed'), true);
+    const d = await api('/api/post','POST',{});
+    if (d.ok) { toast(`✅ Posted! #${d.topic}`); loadStats(); }
+    else toast('❌ '+(d.error||'Failed'), true);
   } catch(e) { toast('❌ Connection error', true); }
   btn.innerHTML = orig;
   btn.style.pointerEvents = '';
@@ -408,22 +449,20 @@ async function postAuto() {
 
 async function postTopic(topic) {
   document.querySelectorAll('.topic-btn').forEach(b =>
-    b.classList.toggle('selected', b.textContent === '#'+topic));
+    b.classList.toggle('selected', b.textContent==='#'+topic));
   toast(`⏳ Posting #${topic}...`);
   try {
-    const d = await api('/api/post', 'POST', { topic });
+    const d = await api('/api/post','POST',{topic});
     if (d.ok) { toast(`✅ #${topic} posted!`); loadStats(); }
-    else toast('❌ ' + (d.error||'Failed'), true);
+    else toast('❌ '+(d.error||'Failed'), true);
   } catch(e) { toast('❌ Connection error', true); }
   document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
 }
 
-// ── Growth ────────────────────────────────────────────────────────────────
 async function growthAction(type) {
-  const labels = { poll:'📣 Publishing poll...', engage:'💬 Posting...', notify:'🔔 Sending...' };
-  toast(labels[type] || '⏳ Working...');
+  toast({poll:'📣 Publishing poll...',engage:'💬 Posting...',notify:'🔔 Sending...'}[type]||'⏳...');
   try {
-    const d = await api('/api/'+type, 'POST', {});
+    const d = await api('/api/'+type,'POST',{});
     if (d.ok) toast('✅ Done!');
     else toast('❌ '+(d.error||'Failed'), true);
   } catch(e) { toast('❌ Connection error', true); }
@@ -432,7 +471,7 @@ async function growthAction(type) {
 async function refreshMembers() {
   toast('🔄 Syncing members...');
   try {
-    const d = await api('/api/refresh_members', 'POST', {});
+    const d = await api('/api/refresh_members','POST',{});
     if (d.ok) {
       document.getElementById('statMembers').textContent = Number(d.members).toLocaleString();
       toast(`✅ Members: ${Number(d.members).toLocaleString()}`);
@@ -440,18 +479,16 @@ async function refreshMembers() {
   } catch(e) { toast('❌ Connection error', true); }
 }
 
-// ── Scheduler ─────────────────────────────────────────────────────────────
 async function toggleScheduler() {
   const btn = document.getElementById('schedToggle');
   const isRunning = btn.classList.contains('running');
   try {
-    await api(isRunning ? '/api/scheduler/pause' : '/api/scheduler/resume', 'POST', {});
-    toast(isRunning ? '⏸ Scheduler paused' : '▶️ Scheduler resumed');
+    await api(isRunning?'/api/scheduler/pause':'/api/scheduler/resume','POST',{});
+    toast(isRunning ? '⏸ Paused' : '▶️ Resumed');
     loadStats();
   } catch(e) { toast('❌ Connection error', true); }
 }
 
-// ── Preview ───────────────────────────────────────────────────────────────
 async function loadPreview() {
   document.getElementById('previewBox').textContent = 'Loading...';
   try {
@@ -462,9 +499,9 @@ async function loadPreview() {
   }
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────
+// ── Start ──
 init();
-setInterval(() => { if (getAPIBase()) loadStats(); }, 60000);
+setInterval(() => { if (getAPIBase() && !document.getElementById('screenDashboard').classList.contains('hidden')) loadStats(); }, 60000);
 </script>
 </body>
 </html>
