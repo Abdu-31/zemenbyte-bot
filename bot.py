@@ -75,10 +75,23 @@ def _check_auth():
 
 @flask_app.after_request
 def add_cors(response):
-    response.headers["Access-Control-Allow-Origin"]  = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Admin-Token"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Origin"]      = "*"
+    response.headers["Access-Control-Allow-Headers"]     = "Content-Type, X-Admin-Token, Authorization"
+    response.headers["Access-Control-Allow-Methods"]     = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Max-Age"]           = "86400"
     return response
+
+@flask_app.before_request
+def handle_options():
+    if request.method == "OPTIONS":
+        from flask import Response
+        resp = Response()
+        resp.headers["Access-Control-Allow-Origin"]  = "*"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Admin-Token, Authorization"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        resp.headers["Access-Control-Max-Age"]       = "86400"
+        return resp, 200
 
 @flask_app.route("/")
 def root():
@@ -131,7 +144,6 @@ def preview():
 
 @flask_app.route("/api/post", methods=["POST", "OPTIONS"])
 def post_to_channel():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     body  = request.get_json(silent=True) or {}
     topic = body.get("topic") or engine.pick_topic()
@@ -150,7 +162,6 @@ def post_to_channel():
 
 @flask_app.route("/api/poll", methods=["POST", "OPTIONS"])
 def send_poll():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     lang = body.get("lang", "en")
@@ -166,7 +177,6 @@ def send_poll():
 
 @flask_app.route("/api/engage", methods=["POST", "OPTIONS"])
 def send_engage():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     try:
         text = growth.create_engagement_post()
@@ -180,7 +190,6 @@ def send_engage():
 
 @flask_app.route("/api/notify", methods=["POST", "OPTIONS"])
 def send_notify():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     try:
         text = growth.create_push_notification()
@@ -194,21 +203,18 @@ def send_notify():
 
 @flask_app.route("/api/scheduler/pause", methods=["POST", "OPTIONS"])
 def pause_sched():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     scheduler.pause()
     return jsonify({"ok": True, "running": False})
 
 @flask_app.route("/api/scheduler/resume", methods=["POST", "OPTIONS"])
 def resume_sched():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     scheduler.resume()
     return jsonify({"ok": True, "running": True})
 
 @flask_app.route("/api/refresh_members", methods=["POST", "OPTIONS"])
 def refresh_members_api():
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     try:
         count = _run_coro(_tg_app.bot.get_chat_member_count(f"@{cfg.CHANNEL_USERNAME}"))
@@ -220,7 +226,6 @@ def refresh_members_api():
 @flask_app.route("/api/broadcast", methods=["POST", "OPTIONS"])
 def broadcast_api():
     """Broadcast a custom message to ALL registered subscribers."""
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     text = body.get("text", "").strip()
@@ -253,7 +258,6 @@ def broadcast_api():
 @flask_app.route("/api/broadcast_newpost", methods=["POST", "OPTIONS"])
 def broadcast_newpost_api():
     """Post to channel AND notify all subscribers."""
-    if request.method == "OPTIONS": return jsonify({}), 200
     if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
 
     topic = engine.pick_topic()
