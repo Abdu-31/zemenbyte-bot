@@ -270,8 +270,11 @@ const ADMIN_IDS = [7198677868];
 // API URL is stored in Telegram CloudStorage (persists across sessions)
 // Falls back to sessionStorage if CloudStorage unavailable
 const tg = window.Telegram?.WebApp;
-let API_BASE   = '';
-let API_SECRET = 'zemenbyte2025';
+const HARDCODED_API    = 'https://zemenbyte.up.railway.app';
+const HARDCODED_SECRET = 'zemenbyte2025';
+
+let API_BASE   = HARDCODED_API;
+let API_SECRET = HARDCODED_SECRET;
 
 // ════════════════════════════════════════════════════════════════════════
 //  STORAGE — Use Telegram CloudStorage, fallback to sessionStorage
