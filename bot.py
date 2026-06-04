@@ -116,26 +116,32 @@ def serve_dashboard():
 
 @flask_app.route("/")
 def root():
-    return jsonify({
-        "service":  "ZemenByte Bot API",
-        "status":   "running ✅",
-        "channel":  f"@{cfg.CHANNEL_USERNAME}",
-        "users":    referral.total_users(),
-        "ts":       datetime.utcnow().isoformat()
-    })
-@flask_app.route("/dashboard")
-def serve_dashboard():
-    from flask import make_response
+    """Serve dashboard at root — same origin, no CORS."""
     import os
-    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    from flask import make_response
+    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
             html = f.read()
-    else:
-        html = "<h1>Add index.html to your repo</h1>"
-    resp = make_response(html)
-    resp.headers["Content-Type"] = "text/html"
-    return resp
+        resp = make_response(html)
+        resp.headers["Content-Type"] = "text/html"
+        return resp
+    return jsonify({
+        "service": "ZemenByte Bot API",
+        "status":  "running ✅",
+        "channel": f"@{cfg.CHANNEL_USERNAME}",
+        "ts":      datetime.utcnow().isoformat()
+    })
+
+@flask_app.route("/status")
+def status():
+    return jsonify({
+        "service": "ZemenByte Bot API",
+        "status":  "running ✅",
+        "channel": f"@{cfg.CHANNEL_USERNAME}",
+        "users":   referral.total_users(),
+        "ts":      datetime.utcnow().isoformat()
+    })
 
 @flask_app.route("/api/health")
 def health():
