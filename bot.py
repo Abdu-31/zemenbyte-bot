@@ -617,7 +617,16 @@ def main():
     jq.run_daily(weekly_engagement_job,     time=dtime(10, 0), days=(0,))
     jq.run_daily(weekly_referral_reminder,  time=dtime(18, 0), days=(2,))
 
-    logger.info("🚀 ZemenByte bot started — pure bot mode!")
+    # Capture event loop and start dashboard server
+    async def post_init(application):
+        import server
+        loop = asyncio.get_running_loop()
+        server.start(analytics, sched, engine, growth, referral, application, cfg, loop)
+        logger.info("✅ Dashboard server started")
+
+    app.post_init = post_init
+
+    logger.info("🚀 ZemenByte bot started — pure bot + dashboard mode!")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

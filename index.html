@@ -271,13 +271,11 @@ const ADMIN_IDS = [7198677868];
 // Falls back to sessionStorage if CloudStorage unavailable
 const tg = window.Telegram?.WebApp;
 // When served from Railway directly — same origin, no CORS issues
-const HARDCODED_API    = 'https://zemenbyte.up.railway.app';
+// Same-origin: dashboard is served FROM Railway, so API calls go to same domain
+const HARDCODED_API    = '';  // empty = same origin = no CORS
 const HARDCODED_SECRET = 'zemenbyte2025';
 
-// If page is served from Railway itself, use relative URLs (no CORS)
-let API_BASE   = (window.location.hostname.includes('railway.app') ||
-                  window.location.hostname.includes('zemenbyte'))
-                 ? '' : HARDCODED_API;
+let API_BASE   = HARDCODED_API;
 let API_SECRET = HARDCODED_SECRET;
 
 // ════════════════════════════════════════════════════════════════════════
@@ -331,12 +329,26 @@ function init() {
     return;
   }
 
-  // Load saved API URL
+  // If served from Railway (same origin), skip setup — API is right here
+  const isSameOrigin = window.location.hostname.includes('railway.app') ||
+                       window.location.hostname.includes('zemenbyte') ||
+                       window.location.hostname === 'localhost';
+
+  if (isSameOrigin) {
+    API_BASE   = '';  // same origin
+    API_SECRET = 'zemenbyte2025';
+    showScreen('sDash');
+    renderTopicBtns();
+    loadStats();
+    loadPreview();
+    return;
+  }
+
+  // External URL (GitHub Pages etc) — load saved URL
   getFromStorage('zb_api_url', (url) => {
     getFromStorage('zb_secret', (secret) => {
       API_BASE   = (url || '').replace(/\/$/, '');
       API_SECRET = secret || 'zemenbyte2025';
-
       if (API_BASE) {
         showScreen('sDash');
         renderTopicBtns();
