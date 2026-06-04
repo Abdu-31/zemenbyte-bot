@@ -60,6 +60,15 @@ _tg_loop  = None
 #  FLASK API (runs on Railway's PORT, serves dashboard)
 # ════════════════════════════════════════════════════════════════════════════
 
+
+# ── Embedded Dashboard HTML ──────────────────────────────────────────────
+DASHBOARD_HTML = open(
+    __import__("os").path.join(__import__("os").path.dirname(__file__), "index.html"),
+    encoding="utf-8"
+).read() if __import__("os").path.exists(
+    __import__("os").path.join(__import__("os").path.dirname(__file__), "index.html")
+) else "<h1>Dashboard not found. Add index.html to repo.</h1>"
+
 flask_app = Flask(__name__)
 
 def _run_coro(coro):
@@ -95,23 +104,15 @@ def handle_options():
 
 @flask_app.route("/dashboard")
 def serve_dashboard():
-    """Serve the admin dashboard directly from Railway — bypasses Telegram CORS."""
-    from flask import send_file, make_response
-    import os
-    # Read the dashboard HTML and inject the API URL
-    html_path = os.path.join(os.path.dirname(__file__), "index.html")
-    if os.path.exists(html_path):
-        with open(html_path, "r") as f:
-            html = f.read()
-        # Inject the correct API base URL
-        html = html.replace(
-            "const HARDCODED_API    = 'https://zemenbyte.up.railway.app';",
-            "const HARDCODED_API    = window.location.origin;"
-        )
-        resp = make_response(html)
-        resp.headers["Content-Type"] = "text/html"
-        return resp
-    return "Dashboard not found", 404
+    """Serve dashboard HTML embedded directly — no external file needed."""
+    from flask import make_response
+    html = DASHBOARD_HTML.replace(
+        "const HARDCODED_API    = \'https://zemenbyte.up.railway.app\';",
+        "const HARDCODED_API    = window.location.origin;"
+    )
+    resp = make_response(html)
+    resp.headers["Content-Type"] = "text/html"
+    return resp
 
 @flask_app.route("/")
 def root():
