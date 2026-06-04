@@ -270,10 +270,14 @@ const ADMIN_IDS = [7198677868];
 // API URL is stored in Telegram CloudStorage (persists across sessions)
 // Falls back to sessionStorage if CloudStorage unavailable
 const tg = window.Telegram?.WebApp;
+// When served from Railway directly — same origin, no CORS issues
 const HARDCODED_API    = 'https://zemenbyte.up.railway.app';
 const HARDCODED_SECRET = 'zemenbyte2025';
 
-let API_BASE   = HARDCODED_API;
+// If page is served from Railway itself, use relative URLs (no CORS)
+let API_BASE   = (window.location.hostname.includes('railway.app') ||
+                  window.location.hostname.includes('zemenbyte'))
+                 ? '' : HARDCODED_API;
 let API_SECRET = HARDCODED_SECRET;
 
 // ════════════════════════════════════════════════════════════════════════

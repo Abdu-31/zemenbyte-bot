@@ -93,6 +93,26 @@ def handle_options():
         resp.headers["Access-Control-Max-Age"]       = "86400"
         return resp, 200
 
+@flask_app.route("/dashboard")
+def serve_dashboard():
+    """Serve the admin dashboard directly from Railway — bypasses Telegram CORS."""
+    from flask import send_file, make_response
+    import os
+    # Read the dashboard HTML and inject the API URL
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r") as f:
+            html = f.read()
+        # Inject the correct API base URL
+        html = html.replace(
+            "const HARDCODED_API    = 'https://zemenbyte.up.railway.app';",
+            "const HARDCODED_API    = window.location.origin;"
+        )
+        resp = make_response(html)
+        resp.headers["Content-Type"] = "text/html"
+        return resp
+    return "Dashboard not found", 404
+
 @flask_app.route("/")
 def root():
     return jsonify({
