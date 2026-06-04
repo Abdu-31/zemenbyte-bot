@@ -249,6 +249,50 @@ def broadcast_api():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
+@flask_app.route("/api/broadcast_newpost", methods=["POST", "OPTIONS"])
+def broadcast_newpost_api():
+    """Post to channel AND notify all subscribers."""
+    if request.method == "OPTIONS": return jsonify({}), 200
+    if not _check_auth(): return jsonify({"error":"Unauthorized"}), 401
+
+    topic = engine.pick_topic()
+    lang  = engine.pick_language()
+    text  = engine.generate_post(topic, lang)
+
+    async def do_all():
+        # 1. Post to channel
+        await _tg_app.bot.send_message(
+            chat_id=f"@{cfg.CHANNEL_USERNAME}",
+            text=text, parse_mode="Markdown"
+        )
+        analytics.record_post(topic, lang)
+        # 2. Notify all subscribers
+        users  = list(referral._data["users"].values())
+        sent   = 0
+        notif  = (
+            f"\U0001f514 *New post on @{cfg.CHANNEL_USERNAME}!*\n\n"
+            f"Topic: #{topic}\n"
+            f"\U0001f449 t.me/{cfg.CHANNEL_USERNAME}"
+        )
+        for u in users:
+            try:
+                await _tg_app.bot.send_message(
+                    chat_id=u["user_id"],
+                    text=notif, parse_mode="Markdown"
+                )
+                sent += 1
+                await asyncio.sleep(0.05)
+            except Exception:
+                pass
+        return sent
+
+    try:
+        sent = _run_coro(do_all())
+        return jsonify({"ok": True, "topic": topic, "sent": sent})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
 @flask_app.route("/api/leaderboard")
 def leaderboard_api():
     lb = referral.get_leaderboard(10)
