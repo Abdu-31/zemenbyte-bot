@@ -604,6 +604,51 @@ async def weekly_referral_reminder(ctx: ContextTypes.DEFAULT_TYPE):
 #  MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+
+
+async def cmd_remind(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Post channel reminder to channel + DM all bot users."""
+    if not is_admin(update.effective_user.id): return
+    msg = (
+        f"📡 *ZemenByte — Daily Tech Channel*\n\n"
+        f"🇬🇧 AI, Crypto, Cybersecurity & more — every day!\n"
+        f"🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n"
+        f"🟢 Oduu teknooloojii guyyuu!\n\n"
+        f"📲 Personal notifications → Start @ZemenByteBot\n"
+        f"📡 Channel → t.me/{cfg.CHANNEL_USERNAME}"
+    )
+    # Post to channel
+    await ctx.bot.send_message(
+        chat_id=f"@{cfg.CHANNEL_USERNAME}",
+        text=msg, parse_mode=ParseMode.MARKDOWN)
+    # Broadcast to bot users
+    await _broadcast(ctx, update.message, msg)
+
+
+async def cmd_referral_promo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Post referral promo to channel + DM all bot users."""
+    if not is_admin(update.effective_user.id): return
+    msg = (
+        "🔗 *ZemenByte Referral Program* 🎁\n\n"
+        "Invite friends & earn points + badges!\n\n"
+        "🏅 *Badge Levels:*\n"
+        "🌱 1 invite → Starter\n"
+        "⭐ 5 invites → Rising Star\n"
+        "🔥 10 invites → Influencer\n"
+        "💎 25 invites → Diamond\n"
+        "👑 50 invites → ZemenByte Legend\n\n"
+        "🇬🇧 Start @ZemenByteBot → /referral\n"
+        "🇪🇹 @ZemenByteBot ጀምር → /referral\n"
+        "🟢 @ZemenByteBot jalqabi → /referral\n\n"
+        "🏆 See top inviters → /leaderboard"
+    )
+    # Post to channel
+    await ctx.bot.send_message(
+        chat_id=f"@{cfg.CHANNEL_USERNAME}",
+        text=msg, parse_mode=ParseMode.MARKDOWN)
+    # Broadcast to bot users
+    await _broadcast(ctx, update.message, msg)
+
 def main():
     token = cfg.BOT_TOKEN
     if not token or token == "YOUR_BOT_TOKEN_HERE":
@@ -623,6 +668,8 @@ def main():
     app.add_handler(CommandHandler("stats",       cmd_stats))
     app.add_handler(CommandHandler("schedule",    cmd_schedule))
     app.add_handler(CommandHandler("notify",      cmd_notify))
+    app.add_handler(CommandHandler("remind",      cmd_remind))
+    app.add_handler(CommandHandler("refpromo",    cmd_referral_promo))
     app.add_handler(CommandHandler("preview",     cmd_preview))
 
     app.add_handler(CallbackQueryHandler(callback_handler))
@@ -634,14 +681,36 @@ def main():
     jq.run_daily(weekly_engagement_job,     time=dtime(10, 0), days=(0,))
     jq.run_daily(weekly_referral_reminder,  time=dtime(18, 0), days=(2,))
 
-    # Capture event loop and start dashboard server
+    # Start dashboard server — loop will be set after polling starts
+    import server as srv
+    import threading, time
+
+    def start_server_delayed():
+        # Wait for bot to start polling and event loop to be running
+        time.sleep(3)
+        loop = None
+        for _ in range(20):
+            try:
+                for t in threading.enumerate():
+                    if hasattr(t, '_target') and t._target and 'polling' in str(t._target):
+                        pass
+                loop = asyncio.get_event_loop()
+                if loop and loop.is_running():
+                    break
+            except Exception:
+                pass
+            time.sleep(0.5)
+        # Get loop from app after it starts
+        srv.start(analytics, sched, engine, growth, referral, app, cfg, None)
+
     async def post_init(application):
-        import server
+        import server as srv2
         loop = asyncio.get_running_loop()
-        server.start(analytics, sched, engine, growth, referral, application, cfg, loop)
-        logger.info("✅ Dashboard server started")
+        srv2._loop = loop
+        logger.info(f"✅ Event loop set in server: {loop}")
 
     app.post_init = post_init
+    threading.Thread(target=start_server_delayed, daemon=True).start()
 
     logger.info("🚀 ZemenByte bot started — pure bot + dashboard mode!")
     app.run_polling(allowed_updates=Update.ALL_TYPES)

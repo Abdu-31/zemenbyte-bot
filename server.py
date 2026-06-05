@@ -34,12 +34,18 @@ def init(analytics, scheduler, engine, growth, referral, app, cfg):
     _cfg        = cfg
 
 def _run(coro):
-    """Run async coroutine from sync Flask thread."""
+    """Run async coroutine from sync Flask thread safely."""
     global _loop
+    # Wait up to 10s for loop to be ready
+    import time
+    for _ in range(20):
+        if _loop is not None and _loop.is_running():
+            break
+        time.sleep(0.5)
     if _loop is None or not _loop.is_running():
-        raise RuntimeError("Bot loop not ready")
+        raise RuntimeError("Bot event loop not ready — try again in a few seconds")
     fut = asyncio.run_coroutine_threadsafe(coro, _loop)
-    return fut.result(timeout=20)
+    return fut.result(timeout=30)
 
 def _auth():
     token = request.headers.get("X-Admin-Token", "")
