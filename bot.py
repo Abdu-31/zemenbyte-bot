@@ -648,17 +648,7 @@ async def cmd_referral_promo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text=msg, parse_mode=ParseMode.MARKDOWN)
     # Broadcast to bot users
     await _broadcast(ctx, update.message, msg)
-async def cmd_remind(update, ctx):
-    if update.effective_user.id not in cfg.ADMIN_IDS: return
-    msg = f"📡 *ZemenByte — Daily Tech*\n\n🇬🇧 AI, Crypto, Cyber & more daily!\n🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n🟢 Oduu teknooloojii guyyuu!\n\n📲 t.me/ZemenByteBot\n📡 t.me/{cfg.CHANNEL_USERNAME}"
-    await ctx.bot.send_message(chat_id=f"@{cfg.CHANNEL_USERNAME}", text=msg, parse_mode="Markdown")
-    await _broadcast(ctx, update.message, msg)
 
-async def cmd_referral_promo(update, ctx):
-    if update.effective_user.id not in cfg.ADMIN_IDS: return
-    msg = "🔗 *ZemenByte Referral Program* 🎁\n\nInvite friends & earn badges!\n🌱1→⭐5→🔥10→💎25→👑50\n\n👉 Start @ZemenByteBot → /referral\n🏆 /leaderboard"
-    await ctx.bot.send_message(chat_id=f"@{cfg.CHANNEL_USERNAME}", text=msg, parse_mode="Markdown")
-    await _broadcast(ctx, update.message, msg)
 def main():
     token = cfg.BOT_TOKEN
     if not token or token == "YOUR_BOT_TOKEN_HERE":
@@ -677,8 +667,6 @@ def main():
     app.add_handler(CommandHandler("post",        cmd_post))
     app.add_handler(CommandHandler("stats",       cmd_stats))
     app.add_handler(CommandHandler("schedule",    cmd_schedule))
-    app.add_handler(CommandHandler("remind",   cmd_remind))
-    app.add_handler(CommandHandler("refpromo", cmd_referral_promo))
     app.add_handler(CommandHandler("notify",      cmd_notify))
     app.add_handler(CommandHandler("remind",      cmd_remind))
     app.add_handler(CommandHandler("refpromo",    cmd_referral_promo))
