@@ -273,6 +273,83 @@ def broadcast_newpost():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
+@flask_app.route("/api/channel_reminder", methods=["POST", "OPTIONS"])
+def channel_reminder():
+    if request.method == "OPTIONS": return jsonify({}), 200
+    if not _auth(): return jsonify({"error": "Unauthorized"}), 401
+    msg = (
+        f"📡 *ZemenByte — Daily Tech Channel*\n\n"
+        f"🇬🇧 Stay updated on AI, Crypto, Cybersecurity & more!\n"
+        f"🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n"
+        f"🟢 Oduu teknooloojii guyyuu!\n\n"
+        f"📲 Start our bot for personal notifications:\n"
+        f"👉 t.me/ZemenByteBot\n\n"
+        f"📡 Channel: t.me/{_cfg.CHANNEL_USERNAME}"
+    )
+    async def do():
+        # Post to channel
+        await _tg_app.bot.send_message(
+            chat_id=f"@{_cfg.CHANNEL_USERNAME}",
+            text=msg, parse_mode="Markdown")
+        # DM bot users
+        users = list(_referral._data["users"].values())
+        sent = 0
+        for u in users:
+            try:
+                await _tg_app.bot.send_message(
+                    chat_id=u["user_id"], text=msg, parse_mode="Markdown")
+                sent += 1
+                await asyncio.sleep(0.05)
+            except Exception: pass
+        return sent
+    try:
+        sent = _run(do())
+        return jsonify({"ok": True, "sent": sent})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@flask_app.route("/api/referral_promo", methods=["POST", "OPTIONS"])
+def referral_promo():
+    if request.method == "OPTIONS": return jsonify({}), 200
+    if not _auth(): return jsonify({"error": "Unauthorized"}), 401
+    msg = (
+        "🔗 *ZemenByte Referral Program* 🎁\n\n"
+        "Invite friends & earn points + badges!\n\n"
+        "🏅 Badges:\n"
+        "🌱 1 invite → Starter\n"
+        "⭐ 5 invites → Rising Star\n"
+        "🔥 10 invites → Influencer\n"
+        "💎 25 invites → Diamond\n"
+        "👑 50 invites → ZemenByte Legend\n\n"
+        "🇬🇧 Start @ZemenByteBot → send /referral\n"
+        "🇪🇹 @ZemenByteBot ጀምር → /referral ላክ\n"
+        "🟢 @ZemenByteBot jalqabi → /referral ergi\n\n"
+        "🏆 Leaderboard → /leaderboard"
+    )
+    async def do():
+        # Post to channel
+        await _tg_app.bot.send_message(
+            chat_id=f"@{_cfg.CHANNEL_USERNAME}",
+            text=msg, parse_mode="Markdown")
+        # DM bot users
+        users = list(_referral._data["users"].values())
+        sent = 0
+        for u in users:
+            try:
+                await _tg_app.bot.send_message(
+                    chat_id=u["user_id"], text=msg, parse_mode="Markdown")
+                sent += 1
+                await asyncio.sleep(0.05)
+            except Exception: pass
+        return sent
+    try:
+        sent = _run(do())
+        return jsonify({"ok": True, "sent": sent})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
 @flask_app.route("/api/leaderboard")
 def leaderboard():
     if not _referral: return jsonify([])
