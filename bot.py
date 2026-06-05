@@ -604,6 +604,51 @@ async def weekly_referral_reminder(ctx: ContextTypes.DEFAULT_TYPE):
 #  MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+
+
+async def cmd_remind(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Post channel reminder to channel + DM all bot users."""
+    if not is_admin(update.effective_user.id): return
+    msg = (
+        f"📡 *ZemenByte — Daily Tech Channel*\n\n"
+        f"🇬🇧 AI, Crypto, Cybersecurity & more — every day!\n"
+        f"🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n"
+        f"🟢 Oduu teknooloojii guyyuu!\n\n"
+        f"📲 Personal notifications → Start @ZemenByteBot\n"
+        f"📡 Channel → t.me/{cfg.CHANNEL_USERNAME}"
+    )
+    # Post to channel
+    await ctx.bot.send_message(
+        chat_id=f"@{cfg.CHANNEL_USERNAME}",
+        text=msg, parse_mode=ParseMode.MARKDOWN)
+    # Broadcast to bot users
+    await _broadcast(ctx, update.message, msg)
+
+
+async def cmd_referral_promo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Post referral promo to channel + DM all bot users."""
+    if not is_admin(update.effective_user.id): return
+    msg = (
+        "🔗 *ZemenByte Referral Program* 🎁\n\n"
+        "Invite friends & earn points + badges!\n\n"
+        "🏅 *Badge Levels:*\n"
+        "🌱 1 invite → Starter\n"
+        "⭐ 5 invites → Rising Star\n"
+        "🔥 10 invites → Influencer\n"
+        "💎 25 invites → Diamond\n"
+        "👑 50 invites → ZemenByte Legend\n\n"
+        "🇬🇧 Start @ZemenByteBot → /referral\n"
+        "🇪🇹 @ZemenByteBot ጀምር → /referral\n"
+        "🟢 @ZemenByteBot jalqabi → /referral\n\n"
+        "🏆 See top inviters → /leaderboard"
+    )
+    # Post to channel
+    await ctx.bot.send_message(
+        chat_id=f"@{cfg.CHANNEL_USERNAME}",
+        text=msg, parse_mode=ParseMode.MARKDOWN)
+    # Broadcast to bot users
+    await _broadcast(ctx, update.message, msg)
+
 def main():
     token = cfg.BOT_TOKEN
     if not token or token == "YOUR_BOT_TOKEN_HERE":
@@ -623,6 +668,8 @@ def main():
     app.add_handler(CommandHandler("stats",       cmd_stats))
     app.add_handler(CommandHandler("schedule",    cmd_schedule))
     app.add_handler(CommandHandler("notify",      cmd_notify))
+    app.add_handler(CommandHandler("remind",      cmd_remind))
+    app.add_handler(CommandHandler("refpromo",    cmd_referral_promo))
     app.add_handler(CommandHandler("preview",     cmd_preview))
 
     app.add_handler(CallbackQueryHandler(callback_handler))
