@@ -350,6 +350,49 @@ def referral_promo():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+@flask_app.route("/api/channel_reminder", methods=["POST","OPTIONS"])
+def channel_reminder():
+    if request.method == "OPTIONS": return jsonify({}), 200
+    if not _auth(): return jsonify({"error":"Unauthorized"}), 401
+    msg = f"📡 *ZemenByte — Daily Tech*\n\n🇬🇧 AI, Crypto, Cyber updates daily!\n🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n🟢 Oduu teknooloojii guyyuu!\n\n📲 t.me/ZemenByteBot\n📡 t.me/{_cfg.CHANNEL_USERNAME}"
+    async def do():
+        await _tg_app.bot.send_message(chat_id=f"@{_cfg.CHANNEL_USERNAME}", text=msg, parse_mode="Markdown")
+        users = list(_referral._data["users"].values())
+        sent = 0
+        for u in users:
+            try:
+                await _tg_app.bot.send_message(chat_id=u["user_id"], text=msg, parse_mode="Markdown")
+                sent += 1
+                await asyncio.sleep(0.05)
+            except Exception: pass
+        return sent
+    try:
+        sent = _run(do())
+        return jsonify({"ok": True, "sent": sent})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@flask_app.route("/api/referral_promo", methods=["POST","OPTIONS"])
+def referral_promo():
+    if request.method == "OPTIONS": return jsonify({}), 200
+    if not _auth(): return jsonify({"error":"Unauthorized"}), 401
+    msg = "🔗 *ZemenByte Referral Program* 🎁\n\nInvite friends & earn badges!\n🌱1→⭐5→🔥10→💎25→👑50\n\n👉 Start @ZemenByteBot → /referral\n🏆 /leaderboard"
+    async def do():
+        await _tg_app.bot.send_message(chat_id=f"@{_cfg.CHANNEL_USERNAME}", text=msg, parse_mode="Markdown")
+        users = list(_referral._data["users"].values())
+        sent = 0
+        for u in users:
+            try:
+                await _tg_app.bot.send_message(chat_id=u["user_id"], text=msg, parse_mode="Markdown")
+                sent += 1
+                await asyncio.sleep(0.05)
+            except Exception: pass
+        return sent
+    try:
+        sent = _run(do())
+        return jsonify({"ok": True, "sent": sent})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 @flask_app.route("/api/leaderboard")
 def leaderboard():
     if not _referral: return jsonify([])
