@@ -440,13 +440,21 @@ async def callback_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     elif data == "bcast_reminder":
         msg = (
-            f"📡 *Hey! Don't miss today's posts on @{cfg.CHANNEL_USERNAME}!*\n\n"
-            f"🇬🇧 Daily AI, Crypto & Tech updates!\n"
+            f"📡 *ZemenByte — Daily Tech Channel*\n\n"
+            f"🇬🇧 Stay updated on AI, Crypto, Cybersecurity & more!\n"
             f"🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n"
             f"🟢 Oduu teknooloojii guyyuu!\n\n"
-            f"👉 t.me/{cfg.CHANNEL_USERNAME}"
+            f"📲 Start our bot for personal notifications:\n"
+            f"👉 t.me/ZemenByteBot\n\n"
+            f"📡 Channel: t.me/{cfg.CHANNEL_USERNAME}"
         )
         await query.edit_message_text("📡 Broadcasting reminder...", parse_mode=ParseMode.MARKDOWN)
+        # Post to channel first
+        try:
+            await ctx.bot.send_message(
+                chat_id=f"@{cfg.CHANNEL_USERNAME}", text=msg, parse_mode=ParseMode.MARKDOWN)
+        except Exception: pass
+        # DM all registered users
         users = list(referral._data["users"].values())
         sent  = 0
         for u in users:
@@ -456,17 +464,26 @@ async def callback_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await asyncio.sleep(0.05)
             except Exception: pass
         await query.edit_message_text(
-            f"✅ Reminder sent to `{sent}` subscribers!\n\n_Tap /start for dashboard._",
+            f"✅ Posted to channel + notified `{sent}` users!\n\n_Tap /start for dashboard._",
             parse_mode=ParseMode.MARKDOWN)
 
     elif data == "bcast_referral":
         msg = (
             "🔗 *ZemenByte Referral Program* 🎁\n\n"
-            "Invite friends & earn points!\n\n"
-            "🇬🇧 /referral\n🇪🇹 /referral\n🟢 /referral\n\n"
-            "🏆 /leaderboard"
+            "Invite friends & earn points + badges!\n\n"
+            "🏅 Badges: 🌱 Starter → ⭐ Rising Star → 🔥 Influencer → 💎 Diamond → 👑 Legend\n\n"
+            "🇬🇧 Get your link → Start @ZemenByteBot → /referral\n"
+            "🇪🇹 ሊንክ ውሰድ → @ZemenByteBot ጀምር → /referral\n"
+            "🟢 Hidhata fudhadhu → @ZemenByteBot jalqabi → /referral\n\n"
+            "🏆 Leaderboard → /leaderboard"
         )
         await query.edit_message_text("🔗 Broadcasting referral promo...", parse_mode=ParseMode.MARKDOWN)
+        # Post to channel first
+        try:
+            await ctx.bot.send_message(
+                chat_id=f"@{cfg.CHANNEL_USERNAME}", text=msg, parse_mode=ParseMode.MARKDOWN)
+        except Exception: pass
+        # DM all registered users
         users = list(referral._data["users"].values())
         sent  = 0
         for u in users:
@@ -476,7 +493,7 @@ async def callback_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await asyncio.sleep(0.05)
             except Exception: pass
         await query.edit_message_text(
-            f"✅ Referral promo sent to `{sent}` users!\n\n_Tap /start for dashboard._",
+            f"✅ Posted to channel + notified `{sent}` users!\n\n_Tap /start for dashboard._",
             parse_mode=ParseMode.MARKDOWN)
 
     elif data == "bcast_newpost":

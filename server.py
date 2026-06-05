@@ -212,11 +212,21 @@ def broadcast():
     if not _auth(): return jsonify({"error": "Unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     text = body.get("text", "").strip()
+    post_to_channel = body.get("post_to_channel", False)
     if not text: return jsonify({"error": "text required"}), 400
 
     async def do_broadcast():
+        sent = 0
+        # 1. Post to channel if requested
+        if post_to_channel:
+            try:
+                await _tg_app.bot.send_message(
+                    chat_id=f"@{_cfg.CHANNEL_USERNAME}",
+                    text=text, parse_mode="Markdown")
+            except Exception as e:
+                pass
+        # 2. DM all registered bot users
         users = list(_referral._data["users"].values())
-        sent  = 0
         for u in users:
             try:
                 await _tg_app.bot.send_message(
@@ -228,7 +238,7 @@ def broadcast():
 
     try:
         sent = _run(do_broadcast())
-        return jsonify({"ok": True, "sent": sent})
+        return jsonify({"ok": True, "sent": sent, "channel": post_to_channel})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 

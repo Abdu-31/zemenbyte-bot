@@ -547,17 +547,26 @@ const ACTION_MAP = {
   'poll':               (lang) => api('/api/poll','POST',{lang}),
   'engage':             ()     => api('/api/engage','POST',{}),
   'notify':             ()     => api('/api/notify','POST',{}),
-  'broadcast_reminder': ()     => api('/api/broadcast','POST',{text:
-    `📡 *Hey! Don't miss today's posts on @ZemenByte!*\n\n`+
-    `🇬🇧 Daily AI, Crypto & Tech updates!\n`+
+  'broadcast_reminder': ()     => api('/api/broadcast','POST',{
+    post_to_channel: true,
+    text:
+    `📡 *ZemenByte — Daily Tech Channel*\n\n`+
+    `🇬🇧 Stay updated on AI, Crypto, Cybersecurity & more!\n`+
     `🇪🇹 ዕለታዊ የቴክ ዜናዎች!\n`+
     `🟢 Oduu teknooloojii guyyuu!\n\n`+
-    `👉 t.me/ZemenByte`}),
-  'broadcast_referral': ()     => api('/api/broadcast','POST',{text:
+    `📲 Start our bot for personal notifications:\n`+
+    `👉 t.me/ZemenByteBot\n\n`+
+    `📡 Channel: t.me/ZemenByte`}),
+  'broadcast_referral': ()     => api('/api/broadcast','POST',{
+    post_to_channel: true,
+    text:
     `🔗 *ZemenByte Referral Program* 🎁\n\n`+
-    `Invite friends & earn points!\n\n`+
-    `🇬🇧 /referral\n🇪🇹 /referral\n🟢 /referral\n\n`+
-    `🏆 /leaderboard`}),
+    `Invite friends & earn points + badges!\n\n`+
+    `🏅 Badges: 🌱 Starter → ⭐ Rising Star → 🔥 Influencer → 💎 Diamond → 👑 Legend\n\n`+
+    `🇬🇧 Get your link → Start @ZemenByteBot → /referral\n`+
+    `🇪🇹 ሊንክ ውሰድ → @ZemenByteBot ጀምር → /referral\n`+
+    `🟢 Hidhata fudhadhu → @ZemenByteBot jalqabi → /referral\n\n`+
+    `🏆 Leaderboard → /leaderboard`}),
   'broadcast_newpost':  ()     => api('/api/broadcast_newpost','POST',{}),
 };
 
