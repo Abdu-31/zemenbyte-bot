@@ -275,7 +275,7 @@ def broadcast_newpost():
 
 
 @flask_app.route("/api/channel_reminder", methods=["POST", "OPTIONS"])
-def channel_reminder():
+def api_channel_reminder():
     if request.method == "OPTIONS": return jsonify({}), 200
     if not _auth(): return jsonify({"error": "Unauthorized"}), 401
     msg = (
@@ -311,7 +311,7 @@ def channel_reminder():
 
 
 @flask_app.route("/api/referral_promo", methods=["POST", "OPTIONS"])
-def referral_promo():
+def api_referral_promo():
     if request.method == "OPTIONS": return jsonify({}), 200
     if not _auth(): return jsonify({"error": "Unauthorized"}), 401
     msg = (
